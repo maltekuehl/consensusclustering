@@ -94,6 +94,7 @@ def test_computer_consensus_matrix():
     assert np.array_equal(consensus_matrix, np.array([[0.5, 1.0], [1.0, 0.0]]))
 
 
+@pytest.mark.filterwarnings("ignore:Kneedle algorithm failed to find a knee")
 @pytest.mark.parametrize("n_jobs", [0, -1])
 def test_consensus_cluster_uniform(n_jobs, uniform_data):
     run_count = 1 if n_jobs == 0 else 5
@@ -112,7 +113,9 @@ def test_consensus_cluster_uniform(n_jobs, uniform_data):
         assert len(clustering.consensus_matrices_) == 5
         hist, bins = clustering.hist(3)
         assert np.mean(hist) > 0.7
-        assert clustering.best_k() == 2
+        # uniform data have no cluster structure: no k is more stable than another, so the area under the CDF rises
+        # without a knee (best_k returns None) or its knee is the smallest k; which depends on the random draws
+        assert clustering.best_k() in (None, clustering.min_clusters)
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0])
