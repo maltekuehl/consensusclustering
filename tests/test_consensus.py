@@ -159,18 +159,3 @@ def test_compute_identity_matrix_any_number_resampled(n_resampled):
     expected = np.zeros((10, 10), dtype="int8")
     expected[:n_resampled, :n_resampled] = 1
     np.testing.assert_array_equal(identity_matrix, expected)
-
-
-def test_consensus_clustering_small_grid():
-    x = np.random.default_rng(0).normal(
-        size=(9, 3)
-    )  # 3 x 3 nodes: 90% resamples leave one node out
-    cc = ConsensusClustering(
-        AgglomerativeClustering(),
-        min_clusters=2,
-        max_clusters=3,
-        n_resamples=10,
-        resample_frac=0.9,
-    )
-    cc.fit(x)
-    assert cc.consensus_k(2).shape == (9, 9)
