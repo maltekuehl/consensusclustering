@@ -132,3 +132,30 @@ def test_consensus_cluster_gaussian(n_jobs, gaussian_data):
     assert hist[9] > 0.0
     assert all(hist[1:9] == 0.0)
     assert clustering.best_k() == 3
+
+
+@pytest.mark.parametrize("n_out_of_bag", [0, 1, 2, 5])
+def test_compute_connectivity_matrix_any_number_out_of_bag(n_out_of_bag):
+    rng = np.random.default_rng(0)
+    labels = rng.integers(0, 3, size=12)
+    labels[:n_out_of_bag] = -1
+    connectivity_matrix = compute_connectivity_matrix(labels)
+    expected = (labels[:, None] == labels[None, :]) & (labels[:, None] != -1) & (labels[None, :] != -1)
+    np.testing.assert_array_equal(connectivity_matrix, expected.astype("int8"))
+
+
+@pytest.mark.parametrize("n_resampled", [0, 1, 2, 7])
+def test_compute_identity_matrix_any_number_resampled(n_resampled):
+    x = np.zeros((10, 2))
+    resampled = np.arange(n_resampled)
+    identity_matrix = compute_identity_matrix(x, resampled)
+    expected = np.zeros((10, 10), dtype="int8")
+    expected[:n_resampled, :n_resampled] = 1
+    np.testing.assert_array_equal(identity_matrix, expected)
+
+
+def test_consensus_clustering_small_grid():
+    x = np.random.default_rng(0).normal(size=(9, 3))  # 3 x 3 nodes: 90% resamples leave one node out
+    cc = ConsensusClustering(AgglomerativeClustering(), min_clusters=2, max_clusters=3, n_resamples=10, resample_frac=0.9)
+    cc.fit(x)
+    assert cc.consensus_k(2).shape == (9, 9)
