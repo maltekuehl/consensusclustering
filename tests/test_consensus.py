@@ -143,7 +143,11 @@ def test_compute_connectivity_matrix_any_number_out_of_bag(n_out_of_bag):
     labels = rng.integers(0, 3, size=12)
     labels[:n_out_of_bag] = -1
     connectivity_matrix = compute_connectivity_matrix(labels)
-    expected = (labels[:, None] == labels[None, :]) & (labels[:, None] != -1) & (labels[None, :] != -1)
+    expected = (
+        (labels[:, None] == labels[None, :])
+        & (labels[:, None] != -1)
+        & (labels[None, :] != -1)
+    )
     np.testing.assert_array_equal(connectivity_matrix, expected.astype("int8"))
 
 
@@ -158,7 +162,15 @@ def test_compute_identity_matrix_any_number_resampled(n_resampled):
 
 
 def test_consensus_clustering_small_grid():
-    x = np.random.default_rng(0).normal(size=(9, 3))  # 3 x 3 nodes: 90% resamples leave one node out
-    cc = ConsensusClustering(AgglomerativeClustering(), min_clusters=2, max_clusters=3, n_resamples=10, resample_frac=0.9)
+    x = np.random.default_rng(0).normal(
+        size=(9, 3)
+    )  # 3 x 3 nodes: 90% resamples leave one node out
+    cc = ConsensusClustering(
+        AgglomerativeClustering(),
+        min_clusters=2,
+        max_clusters=3,
+        n_resamples=10,
+        resample_frac=0.9,
+    )
     cc.fit(x)
     assert cc.consensus_k(2).shape == (9, 9)
